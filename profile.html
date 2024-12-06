@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Профиль пользователя</title>
+    <link rel="stylesheet" href="/css/style.css/">
+</head>
+<body>
+    <header>
+        <h1>Профиль пользователя</h1>
+        <nav>
+            <a href="index.html">Главная</a>
+            <a href="picters.html">Рисования</a>
+            <a href="profile.html">Профиль</a>
+        </nav>
+    </header>
+
+    <section>
+        <h2>Информация о пользователе</h2>
+        <div id="userInfo">
+            <p><strong>Имя:</strong> <span id="userName">Пользователь</span></p>
+            <p><strong>Email:</strong> <span id="userEmail">polzovatel@example.com</span></p>
+        </div>
+
+        <h2>Редактирование профиля</h2>
+        <form id="profileForm">
+            <label for="editName">Имя:</label>
+            <input type="text" id="editName" value="">
+            <br><br>
+
+            <label for="editEmail">Email:</label>
+            <input type="email" id="editEmail" value="">
+            <br><br>
+            <button type="button" onclick="updateProfile()">Сохранить изменения</button>
+        </form>
+
+    </section>
+
+    <script>
+        // Функция для обновления профиля
+        function updateProfile() {
+            // Получаем новые значения из формы
+            const newName = document.getElementById('editName').value;
+            const newEmail = document.getElementById('editEmail').value;
+            const newCourses = document.getElementById('editCourses').value;
+
+            // Обновляем отображаемую информацию
+            document.getElementById('userName').textContent = newName;
+            document.getElementById('userEmail').textContent = newEmail;
+            document.getElementById('completedCourses').textContent = newCourses + ' из 3';
+
+            // Показываем уведомление об успешном обновлении
+            alert('Профиль обновлен!');
+        }
+    </script>
+</body>
+</html>

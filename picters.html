@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<link rel="stylesheet" href="/css/style.css/">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Расширенное приложение для рисования</title>
+   <header>
+        <h1>Новый холст</h1>
+        <nav>
+            <a href="index.html">Главная</a>
+            <a href="profile.html">Профиль</a>
+        </nav>
+       </header>
+    </head>
+<body>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+        canvas {
+            display: block;
+        }
+        .toolbar {
+            position: left;
+            top: 10px;
+            left: 10px;
+            background: rgb(130, 116, 255);
+            border-radius: 8px;
+            padding: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            z-index: 10;
+        }
+        }
+        .toolbar button.active {
+            background: #00000;
+            border-color: #0000;
+        }
+    </style>
+</head>
+<body>
+    <div class="toolbar">
+        <input type="color" id="colorPicker" value="#000000">
+        <button id="brushButton" class="active">Кисть</button>
+        <button id="pencilButton">Карандаш</button>
+        <button id="eraserButton">Ластик</button>
+        <button id="lineButton">Линия</button>
+        <button id="rectButton">Прямоугольник</button>
+        <button id="circleButton">Круг</button>
+        <button data-brush="normal">Обычная кисть</button>
+        <button data-brush="textured">Текстурная кисть</button>
+        <button data-brush="dotted">Штриховая кисть</button>
+        <button data-size="5">5px</button>
+        <button data-size="10">10px</button>
+        <button data-size="20">20px</button>
+    </div>
+    <canvas id="drawingCanvas"></canvas>
+    <script>
+        const canvas = document.getElementById('drawingCanvas');
+        const ctx = canvas.getContext('2d');
+        const toolbar = document.querySelector('.toolbar');
+        const colorPicker = document.getElementById('colorPicker');
+        const brushButton = document.getElementById('brushButton');
+        const pencilButton = document.getElementById('pencilButton');
+        const eraserButton = document.getElementById('eraserButton');
+        const lineButton = document.getElementById('lineButton');
+        const rectButton = document.getElementById('rectButton');
+        const circleButton = document.getElementById('circleButton');
+
+        let isDrawing = false;
+        let startX = 0;
+        let startY = 0;
+        let currentX = 0;
+        let currentY = 0;
+        let color = colorPicker.value;
+        let lineWidth = 5;
+        let mode = 'brush'; // brush, pencil, eraser, line, rect, circle
+        let brushType = 'normal'; // normal, textured, dotted
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        canvas.addEventListener('mousedown', (e) => {
+            isDrawing = true;
+            startX = e.offsetX;
+            startY = e.offsetY;
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            if (!isDrawing) return;
+            currentX = e.offsetX;
+            currentY = e.offsetY;
+
+            if (mode === 'brush' || mode === 'pencil' || mode === 'eraser') {
+                ctx.strokeStyle = mode === 'eraser' ? '#ffffff' : color;
+                ctx.lineWidth = lineWidth;
+                ctx.globalAlpha = mode === 'pencil' ? 0.5 : 1;
+                ctx.lineJoin = 'round';
+                ctx.lineCap = 'round';
+
+                if (brushType === 'dotted') {
+                    ctx.setLineDash([5, 5]);
+                } else {
+                    ctx.setLineDash([]);
+                }
+
+                if (brushType === 'textured') {
+                    ctx.globalCompositeOperation = 'source-over';
+                }
+
+                ctx.beginPath();
+                ctx.moveTo(startX, startY);
+                ctx.lineTo(currentX, currentY);
+                ctx.stroke();
+                [startX, startY] = [currentX, currentY];
+            }
+        });
+
+        canvas.addEventListener('mouseup', () => {
+            if (mode === 'line' || mode === 'rect' || mode === 'circle') {
+                ctx.strokeStyle = color;
+                ctx.lineWidth = lineWidth;
+                ctx.beginPath();
+                if (mode === 'line') {
+                    ctx.moveTo(startX, startY);
+                    ctx.lineTo(currentX, currentY);
+                } else if (mode === 'rect') {
+                    ctx.rect(
+                        Math.min(startX, currentX),
+                        Math.min(startY, currentY),
+                        Math.abs(currentX - startX),
+                        Math.abs(currentY - startY)
+                    );
+                } else if (mode === 'circle') {
+                    const radius = Math.sqrt(
+                        Math.pow(currentX - startX, 2) + Math.pow(currentY - startY, 2)
+                    );
+                    ctx.arc(startX, startY, radius, 0, Math.PI * 2);
+                }
+                ctx.stroke();
+            }
+            isDrawing = false;
+        });
+
+        // Изменение цвета
+        colorPicker.addEventListener('input', (e) => {
+            color = e.target.value;
+        });
+
+        // Режимы
+        brushButton.addEventListener('click', () => setMode('brush'));
+        pencilButton.addEventListener('click', () => setMode('pencil'));
+        eraserButton.addEventListener('click', () => setMode('eraser'));
+        lineButton.addEventListener('click', () => setMode('line'));
+        rectButton.addEventListener('click', () => setMode('rect'));
+        circleButton.addEventListener('click', () => setMode('circle'));
+
+        // Изменение толщины
+        toolbar.addEventListener('click', (e) => {
+            if (e.target.dataset.size) {
+                lineWidth = parseInt(e.target.dataset.size, 10);
+            }
+            if (e.target.dataset.brush) {
+                brushType = e.target.dataset.brush;
+            }
+        });
+
+        function setMode(newMode) {
+            mode = newMode;
+            document.querySelectorAll('.toolbar button').forEach((btn) =>
+                btn.classList.remove('active')
+            );
+            document.getElementById(`${newMode}Button`).classList.add('active');
+        }
+    </script>
+</body>
+</html>
